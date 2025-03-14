@@ -574,6 +574,20 @@ func (sig *Signature) Clean() {
 	*sig = Signature{}
 }
 
+// ImportSecretKey imports an existing secret key for use with this signature object
+func (sig *Signature) ImportSecretKey(secretKey []byte) error {
+	// Validate input
+	if len(secretKey) != sig.algDetails.LengthSecretKey {
+		return errors.New("incorrect secret key length")
+	}
+
+	// Copy the provided key into the signature object
+	sig.secretKey = make([]byte, len(secretKey))
+	copy(sig.secretKey, secretKey)
+
+	return nil
+}
+
 /**************** END Signature ****************/
 
 /**************** Randomness ****************/

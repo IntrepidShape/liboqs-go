@@ -283,3 +283,52 @@ func TestUnsupportedSignature(t *testing.T) {
 		t.Fatal("Unsupported signature should have emitted an error")
 	}
 }
+
+// TestSignatureWithImportedKey tests the signature with imported key functionality.
+func TestSignatureWithImportedKey(t *testing.T) {
+	// Create a signature object and generate keys
+	sig1 := oqs.Signature{}
+	defer sig1.Clean()
+
+	if err := sig1.Init("Dilithium5", nil); err != nil {
+		t.Fatal(err)
+	}
+
+	pubKey, err := sig1.GenerateKeyPair()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Export the secret key
+	secretKey := sig1.ExportSecretKey()
+
+	// Create a new signature object
+	sig2 := oqs.Signature{}
+	defer sig2.Clean()
+
+	if err := sig2.Init("Dilithium5", nil); err != nil {
+		t.Fatal(err)
+	}
+
+	// Import the secret key
+	if err := sig2.ImportSecretKey(secretKey); err != nil {
+		t.Fatal(err)
+	}
+
+	// Sign a message with the imported key
+	message := []byte("test message")
+	signature, err := sig2.Sign(message)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify the signature with the original public key
+	valid, err := sig1.Verify(message, signature, pubKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !valid {
+		t.Error("Signature verification failed")
+	}
+}
